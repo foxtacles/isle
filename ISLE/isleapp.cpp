@@ -811,8 +811,10 @@ inline void IsleApp::Tick(BOOL sleepIfNotNextFrame)
 			}
 			this->m_gameStarted = 1;
 		}
+		return;
 	}
-	else if (sleepIfNotNextFrame != 0)
+
+	if (sleepIfNotNextFrame != 0)
 		Sleep(0);
 }
 
