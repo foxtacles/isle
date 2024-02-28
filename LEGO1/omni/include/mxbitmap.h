@@ -133,7 +133,8 @@ public:
 				height = p_top;
 			}
 			else {
-				height = (GetBmiHeightAbs() - 1) + p_top;
+				height = GetBmiHeightAbs() - 1;
+				height -= p_top;
 			}
 
 			return AlignToFourByte(GetBmiWidth()) * height + m_data + p_left;
