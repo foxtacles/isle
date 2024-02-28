@@ -224,14 +224,11 @@ void MxBitmap::BitBlt(
 	MxS32 p_height
 )
 {
-	MxLong dstHeight = GetBmiHeightAbs();
-	MxLong srcHeight = p_src->GetBmiHeightAbs();
-
 	if (GetRectIntersection(
 			p_src->GetBmiWidth(),
-			srcHeight,
+			p_src->GetBmiHeightAbs(),
 			GetBmiWidth(),
-			dstHeight,
+			GetBmiHeightAbs(),
 			&p_srcLeft,
 			&p_srcTop,
 			&p_dstLeft,
