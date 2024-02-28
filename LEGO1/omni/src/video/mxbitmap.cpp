@@ -261,14 +261,11 @@ void MxBitmap::BitBltTransparent(
 	MxS32 p_height
 )
 {
-	MxLong dstHeight = GetBmiHeightAbs();
-	MxLong srcHeight = p_src->GetBmiHeightAbs();
-
 	if (GetRectIntersection(
 			p_src->GetBmiWidth(),
-			srcHeight,
+			p_src->GetBmiHeightAbs(),
 			GetBmiWidth(),
-			dstHeight,
+			GetBmiHeightAbs(),
 			&p_srcLeft,
 			&p_srcTop,
 			&p_dstLeft,
@@ -278,8 +275,11 @@ void MxBitmap::BitBltTransparent(
 		)) {
 		MxU8* srcStart = p_src->GetStart(p_srcLeft, p_srcTop);
 		MxU8* dstStart = GetStart(p_dstLeft, p_dstTop);
-		MxLong srcStride = p_src->GetAdjustedStride() - p_width;
-		MxLong dstStride = GetAdjustedStride() - p_width;
+		MxLong srcStride = p_src->IsTopDown() ? p_src->AlignToFourByte(p_src->GetBmiWidth())
+											  : -p_src->AlignToFourByte(p_src->GetBmiWidth());
+		srcStride -= p_width;
+		MxLong dstStride = IsTopDown() ? AlignToFourByte(GetBmiWidth()) : -AlignToFourByte(GetBmiWidth());
+		dstStride -= p_width;
 
 		for (MxS32 h = 0; h < p_height; h++) {
 			for (MxS32 w = 0; w < p_width; w++) {

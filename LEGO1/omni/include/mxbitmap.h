@@ -111,22 +111,8 @@ public:
 		}
 	}
 
-	inline MxLong GetLine(MxS32 p_top)
-	{
-		MxS32 height;
-		if (m_bmiHeader->biCompression == BI_RGB_TOPDOWN || m_bmiHeader->biHeight < 0) {
-			height = p_top;
-		}
-		else {
-			height = GetBmiHeightAbs() - p_top - 1;
-		}
-		return GetBmiStride() * height;
-	}
-
 	inline MxU8* GetStart(MxS32 p_left, MxS32 p_top)
 	{
-		// MxU8* result;
-
 		if (m_bmiHeader->biCompression == BI_RGB) {
 			MxLong height;
 			if (IsTopDown()) {
@@ -153,8 +139,6 @@ public:
 
 			return AlignToFourByte(GetBmiWidth()) * height + m_data;
 		}
-
-		// return result;
 	}
 
 	// SYNTHETIC: LEGO1 0x100bc9f0
