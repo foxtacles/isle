@@ -94,6 +94,7 @@ public:
 	inline MxLong GetBmiHeightAbs() const { return AbsFlipped(m_bmiHeader->biHeight); }
 	inline MxU8* GetBitmapData() const { return m_data; }
 	inline MxBITMAPINFO* GetBitmapInfo() const { return m_info; }
+	inline MxBool IsTopDown() { return m_bmiHeader->biCompression == BI_RGB_TOPDOWN || m_bmiHeader->biHeight < 0; }
 	inline MxLong GetDataSize() const
 	{
 		MxLong absHeight = GetBmiHeightAbs();
@@ -124,15 +125,35 @@ public:
 
 	inline MxU8* GetStart(MxS32 p_left, MxS32 p_top)
 	{
+		// MxU8* result;
+
 		if (m_bmiHeader->biCompression == BI_RGB) {
-			return GetLine(p_top) + m_data + p_left;
+			MxLong height;
+			if (IsTopDown()) {
+				height = p_top;
+			}
+			else {
+				height = (GetBmiHeightAbs() - 1) + p_top;
+			}
+
+			return AlignToFourByte(GetBmiWidth()) * height + m_data + p_left;
 		}
 		else if (m_bmiHeader->biCompression == BI_RGB_TOPDOWN) {
 			return m_data;
 		}
 		else {
-			return GetLine(0) + m_data;
+			MxLong height;
+			if (IsTopDown()) {
+				height = 0;
+			}
+			else {
+				height = GetBmiHeightAbs() - 1;
+			}
+
+			return AlignToFourByte(GetBmiWidth()) * height + m_data;
 		}
+
+		// return result;
 	}
 
 	// SYNTHETIC: LEGO1 0x100bc9f0

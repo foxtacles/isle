@@ -241,8 +241,9 @@ void MxBitmap::BitBlt(
 		)) {
 		MxU8* srcStart = p_src->GetStart(p_srcLeft, p_srcTop);
 		MxU8* dstStart = GetStart(p_dstLeft, p_dstTop);
-		MxLong srcStride = p_src->GetAdjustedStride();
-		MxLong dstStride = GetAdjustedStride();
+		MxLong srcStride = p_src->IsTopDown() ? p_src->AlignToFourByte(p_src->GetBmiWidth())
+											  : -p_src->AlignToFourByte(p_src->GetBmiWidth());
+		MxLong dstStride = IsTopDown() ? AlignToFourByte(GetBmiWidth()) : -AlignToFourByte(GetBmiWidth());
 
 		while (p_height--) {
 			memcpy(dstStart, srcStart, p_width);
