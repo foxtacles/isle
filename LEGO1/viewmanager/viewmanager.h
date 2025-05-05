@@ -36,7 +36,7 @@ public:
 	inline int CalculateFrustumTransformations();
 	void UpdateViewTransformations();
 
-	inline static int CalculateLODLevel(float p_und1, float p_und2, ViewROI* p_roi);
+	inline static int CalculateLODLevel(float p_und1, float p_und2, ViewROI* from);
 	inline static int IsROIVisibleAtLOD(ViewROI* p_roi);
 
 	// FUNCTION: BETA10 0x100576b0

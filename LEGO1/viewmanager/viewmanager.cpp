@@ -350,24 +350,32 @@ inline int ViewManager::CalculateFrustumTransformations()
 	}
 }
 
-inline int ViewManager::CalculateLODLevel(float p_und1, float p_und2, ViewROI* p_roi)
+// FUNCTION: BETA10 0x10172be5
+inline int ViewManager::CalculateLODLevel(float p_und1, float p_und2, ViewROI* from)
 {
 	int result;
 	float i;
 
-	if (IsROIVisibleAtLOD(p_roi) != 0) {
+	assert(from);
+
+	if (IsROIVisibleAtLOD(from) != 0) {
 		if (p_und1 < g_minLODThreshold) {
 			return 0;
 		}
-
-		result = 1;
+		else {
+			result = 1;
+		}
 	}
 	else {
 		result = 0;
 	}
 
-	for (i = p_und2; result < g_maxLODLevels && p_und1 < i; i *= g_LODScaleFactor) {
-		result++;
+	for (i = p_und2; result < g_maxLODLevels; result++) {
+		if (i >= p_und1) {
+			break;
+		}
+
+		i *= g_LODScaleFactor;
 	}
 
 	return result;
