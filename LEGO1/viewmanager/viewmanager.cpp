@@ -366,7 +366,7 @@ inline int ViewManager::CalculateLODLevel(float p_und1, float p_und2, ViewROI* p
 		result = 0;
 	}
 
-	for (i = p_und2; result < g_maxLODLevels && p_und1 >= i; i *= g_LODScaleFactor) {
+	for (i = p_und2; result < g_maxLODLevels && p_und1 < i; i *= g_LODScaleFactor) {
 		result++;
 	}
 
