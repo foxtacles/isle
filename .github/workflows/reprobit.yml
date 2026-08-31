@@ -126,61 +126,12 @@ jobs:
           QUARANTINE_BYTES: ${{ steps.reprobit.outputs.quarantine-bytes }}
           QUARANTINE_RANGES: ${{ steps.reprobit.outputs.quarantine-ranges }}
           QUARANTINE_DIGEST: ${{ steps.reprobit.outputs.quarantine-digest }}
-        run: |
-          foreach ($claim in @("ACCEPTED", "BYTE_EXACT", "LOGIC_CERTIFIED", "REPORT_PRODUCED")) {
-            if ((Get-Item "env:$claim").Value -ne "true") {
-              throw "ReproBit did not certify $claim"
-            }
-          }
-          foreach ($claim in @("CLEAN", "TOOLCHAIN_ORIGIN")) {
-            if ((Get-Item "env:$claim").Value -ne "false") {
-              throw "ISLE's reviewed quarantine boundary unexpectedly changed $claim"
-            }
-          }
-          if ($env:QUARANTINED -ne "true") {
-            throw "ISLE's two reviewed quarantine exceptions did not run"
-          }
-          $expectedQuarantine = @{
-            QUARANTINE_COUNT = "2"
-            QUARANTINE_BYTES = "572"
-            QUARANTINE_RANGES = "23"
-            QUARANTINE_DIGEST = "f55d274cf6948c6f944794b03686e52f86ef060ba487cc152d3ff1140edf5ba2"
-          }
-          foreach ($claim in $expectedQuarantine.Keys) {
-            $actual = (Get-Item "env:$claim").Value
-            if ($actual -ne $expectedQuarantine[$claim]) {
-              throw "ISLE's reviewed quarantine boundary changed ${claim}: $actual"
-            }
-          }
-          foreach ($path in @(
-            "build/CONFIG.EXE",
-            "build/ISLE.EXE",
-            "build/LEGO1.DLL",
-            "build/reprobit-debug/CONFIG.EXE",
-            "build/reprobit-debug/CONFIG.PDB",
-            "build/reprobit-debug/ISLE.EXE",
-            "build/reprobit-debug/ISLE.PDB",
-            "build/reprobit-debug/LEGO1.DLL",
-            "build/reprobit-debug/LEGO1.PDB"
-          )) {
-            if (-not (Test-Path -PathType Leaf $path)) {
-              throw "ReproBit did not publish $path"
-            }
-          }
-          foreach ($path in @(
-            "build/CONFIG.PDB", "build/ISLE.PDB", "build/LEGO1.PDB"
-          )) {
-            if (Test-Path $path) {
-              throw "Unexpected sibling comparison output is present: $path"
-            }
-          }
-          foreach ($name in @("CONFIG.EXE", "ISLE.EXE", "LEGO1.DLL")) {
-            $built = (Get-FileHash "build/$name" -Algorithm SHA256).Hash
-            $retail = (Get-FileHash "legobin/$name" -Algorithm SHA256).Hash
-            if ($built -ne $retail) {
-              throw "Published $name does not match its authenticated retail reference"
-            }
-          }
+          # The reviewed quarantine boundary this repository accepts.
+          EXPECTED_QUARANTINE_COUNT: "2"
+          EXPECTED_QUARANTINE_BYTES: "572"
+          EXPECTED_QUARANTINE_RANGES: "23"
+          EXPECTED_QUARANTINE_DIGEST: "f55d274cf6948c6f944794b03686e52f86ef060ba487cc152d3ff1140edf5ba2"
+        run: .github/scripts/check-reprobit-publications.ps1
 
       - name: Export the matching effective source view
         run: rbit source export build/reprobit-debug/source
@@ -299,40 +250,7 @@ jobs:
 
       - name: Require a 100% reccmp match on the ReproBit outcome
         shell: bash
-        run: |
-          python - <<'EOF'
-          import json
-          import sys
-
-          failed = False
-          for target in ("CONFIG", "ISLE", "LEGO1"):
-              with open(f"{target}PROGRESS.json", encoding="utf-8") as handle:
-                  report = json.load(handle)
-              offending = []
-              for entity in report["data"]:
-                  matching = entity.get("matching")
-                  if not isinstance(matching, (int, float)) or matching < 1.0:
-                      offending.append(entity)
-              functions = sum(1 for e in report["data"] if e.get("type") == 1)
-              annotated = report["function_count"]
-              print(
-                  f"{target}: {len(report['data'])} rows,"
-                  f" {len(offending)} below 100%,"
-                  f" {functions} of {annotated} annotated functions compared"
-              )
-              for entity in offending:
-                  failed = True
-                  name = entity.get("name", "?")
-                  print(f"  {entity.get('address')}  {entity.get('matching')}  {name}")
-              if functions != annotated:
-                  failed = True
-                  print(f"  {annotated - functions} annotated function(s) missing from the comparison")
-          if failed:
-              sys.exit(
-                  "reccmp did not score every row at 100%."
-                  " The ReproBit comparison build must match retail exactly."
-              )
-          EOF
+        run: python .github/scripts/require-full-match.py CONFIG ISLE LEGO1
 
       - name: Download current continuous reports
         shell: bash
@@ -429,6 +347,11 @@ jobs:
       contents: write
 
     steps:
+      - name: Check out the publish scripts
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+
       - name: Download exact binaries
         uses: actions/download-artifact@v8
         with:
@@ -464,169 +387,20 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-          files=(
-            build/CONFIG.EXE
-            build/ISLE.EXE
-            build/LEGO1.DLL
-            CONFIGPROGRESS.json
-            CONFIGPROGRESS.SVG
-            ISLEPROGRESS.json
-            ISLEPROGRESS.SVG
-            LEGO1PROGRESS.json
-            LEGO1PROGRESS.SVG
-            reprobit-report/report.html
-            reprobit-report/report.json
-            ReproBit-Debug-Companion.zip
-          )
-          for path in "${files[@]}"; do
-            test -s "$path"
-          done
-
-          staging_tag="continuous-staging-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          cleanup_staging() {
-            status=$?
-            trap - EXIT
-            if [[ "$status" -ne 0 ]]; then
-              set +e
-              gh release delete "$staging_tag" --cleanup-tag --yes >/dev/null 2>&1
-              gh api --method DELETE \
-                "repos/$GITHUB_REPOSITORY/git/refs/tags/$staging_tag" \
-                >/dev/null 2>&1
-            fi
-            exit "$status"
-          }
-          trap cleanup_staging EXIT
-
-          gh release create "$staging_tag" "${files[@]}" \
-            --target "$GITHUB_SHA" \
-            --title "Continuous build" \
-            --notes "Automatically reproduced and verified from $GITHUB_SHA." \
-            --draft
-
-          test "$(gh release view "$staging_tag" --json assets --jq '.assets | length')" -eq "${#files[@]}"
-          for path in "${files[@]}"; do
-            name="$(basename "$path")"
-            expected_size="$(stat -c %s "$path")"
-            expected_digest="sha256:$(sha256sum "$path" | cut -d' ' -f1)"
-            asset="$(gh release view "$staging_tag" --json assets \
-              --jq ".assets[] | select(.name == \"$name\") | [.size, .digest] | @tsv")"
-            IFS=$'\t' read -r actual_size actual_digest <<<"$asset"
-            test "$actual_size" = "$expected_size"
-            test "$actual_digest" = "$expected_digest"
-          done
-
-          # GitHub uploads all assets before exposing a release created this
-          # way. Back up the old release before the short tag swap so a failed
-          # API call cannot leave the project without a continuous release.
-          release_tags="$(gh api --paginate \
-            "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
-            --jq '.[].tag_name')"
-          had_continuous=false
-          rollback_root="$RUNNER_TEMP/continuous-rollback-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          rollback_assets="$rollback_root/assets"
-          rollback_release="$rollback_root/release.json"
-          rollback_notes="$rollback_root/notes.md"
-          mkdir -p "$rollback_assets"
-          if grep -Fxq continuous <<<"$release_tags"; then
-            had_continuous=true
-            gh release view continuous \
-              --json name,body,targetCommitish,isPrerelease,assets \
-              >"$rollback_release"
-            jq -r '.body // ""' "$rollback_release" >"$rollback_notes"
-            gh release download continuous --dir "$rollback_assets"
-            while IFS=$'\t' read -r name size digest; do
-              test "$(stat -c %s "$rollback_assets/$name")" = "$size"
-              test "sha256:$(sha256sum "$rollback_assets/$name" | cut -d' ' -f1)" = "$digest"
-            done < <(jq -r '.assets[] | [.name, .size, .digest] | @tsv' "$rollback_release")
-          fi
-
-          restore_needed=false
-          swap_started=false
-          restore_continuous() {
-            status=$?
-            trap - EXIT
-            if [[ "$status" -ne 0 ]]; then
-              set +e
-              if [[ "$restore_needed" == true ]]; then
-                echo "::warning::Continuous release swap failed; restoring the previous release"
-                current_release="$rollback_root/current.json"
-                release_projection='{name, body, targetCommitish, isPrerelease,
-                  assets: ([.assets[] | {name, size, digest}] | sort_by(.name))}'
-                if gh release view continuous \
-                  --json name,body,targetCommitish,isPrerelease,assets \
-                  >"$current_release" && diff -q \
-                    <(jq -S "$release_projection" "$rollback_release") \
-                    <(jq -S "$release_projection" "$current_release") \
-                    >/dev/null; then
-                  echo "Previous continuous release is still intact"
-                else
-                  gh release delete continuous --cleanup-tag --yes >/dev/null 2>&1
-                  gh release delete "$staging_tag" --cleanup-tag --yes >/dev/null 2>&1
-                  gh api --method DELETE \
-                    "repos/$GITHUB_REPOSITORY/git/refs/tags/continuous" \
-                    >/dev/null 2>&1
-
-                  mapfile -d '' -t rollback_files \
-                    < <(find "$rollback_assets" -maxdepth 1 -type f -print0 | sort -z)
-                  rollback_flags=(--latest=false)
-                  if [[ "$(jq -r '.isPrerelease' "$rollback_release")" == true ]]; then
-                    rollback_flags+=(--prerelease)
-                  fi
-                  if gh release create continuous "${rollback_files[@]}" \
-                    --target "$(jq -r '.targetCommitish' "$rollback_release")" \
-                    --title "$(jq -r '.name // "Continuous build"' "$rollback_release")" \
-                    --notes-file "$rollback_notes" \
-                    "${rollback_flags[@]}"; then
-                    if ! diff -u \
-                      <(jq -S '[.assets[] | {name, size, digest}] | sort_by(.name)' "$rollback_release") \
-                      <(gh release view continuous --json assets \
-                        --jq '[.assets[] | {name, size, digest}] | sort_by(.name)'); then
-                      echo "::error::Restored continuous release assets differ from the backup"
-                    fi
-                  else
-                    echo "::error::Could not restore the previous continuous release"
-                  fi
-                fi
-              elif [[ "$swap_started" == true && "$had_continuous" == false ]]; then
-                gh release delete continuous --cleanup-tag --yes >/dev/null 2>&1
-                gh api --method DELETE \
-                  "repos/$GITHUB_REPOSITORY/git/refs/tags/continuous" \
-                  >/dev/null 2>&1
-              fi
-              gh release delete "$staging_tag" --cleanup-tag --yes >/dev/null 2>&1
-              gh api --method DELETE \
-                "repos/$GITHUB_REPOSITORY/git/refs/tags/$staging_tag" \
-                >/dev/null 2>&1
-            fi
-            exit "$status"
-          }
-          trap restore_continuous EXIT
-
-          swap_started=true
-          if [[ "$had_continuous" == true ]]; then
-            restore_needed=true
-            gh release delete continuous --cleanup-tag --yes
-          fi
-          continuous_refs="$(gh api \
-            "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/continuous" \
-            --jq '.[].ref')"
-          if grep -Fxq refs/tags/continuous <<<"$continuous_refs"; then
-            gh api --method DELETE "repos/$GITHUB_REPOSITORY/git/refs/tags/continuous"
-          fi
-
-          gh release edit "$staging_tag" \
-            --tag continuous \
-            --target "$GITHUB_SHA" \
-            --title "Continuous build" \
-            --notes "Automatically reproduced and verified from $GITHUB_SHA." \
-            --draft=false \
-            --latest=false
-
-          test "$(gh release view continuous --json assets --jq '.assets | length')" -eq "${#files[@]}"
-          restore_needed=false
-          trap - EXIT
+        run: >-
+          .github/scripts/publish-continuous-release.sh
+          build/CONFIG.EXE
+          build/ISLE.EXE
+          build/LEGO1.DLL
+          CONFIGPROGRESS.json
+          CONFIGPROGRESS.SVG
+          ISLEPROGRESS.json
+          ISLEPROGRESS.SVG
+          LEGO1PROGRESS.json
+          LEGO1PROGRESS.SVG
+          reprobit-report/report.html
+          reprobit-report/report.json
+          ReproBit-Debug-Companion.zip
 
   pages:
     name: Publish progress pages
