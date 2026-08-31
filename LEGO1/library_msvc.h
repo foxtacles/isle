@@ -1,4 +1,3 @@
-
 // For LEGO1 symbols only
 
 // aka `operator new`
@@ -571,6 +570,9 @@
 // LIBRARY: LEGO1 0x100d21f0
 // _strstr
 
+// GLOBAL: LEGO1 0x10097b16
+// ___from_strstr_to_strchr
+
 // LIBRARY: LEGO1 0x100d2270
 // __beginthreadex
 
@@ -599,7 +601,7 @@
 // __FPinit
 
 // GLOBAL: LEGO1 0x100fc8f0
-// __iob
+// _iob
 
 // GLOBAL: LEGO1 0x100fcb70
 // __cflush
