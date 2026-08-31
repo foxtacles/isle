@@ -2,4 +2,6 @@
 # inside function bodies); revert to isledecomp/reccmp once that PR merges.
 reccmp @ git+https://github.com/foxtacles/reccmp@c2dac1bcba99e30c229fc5670fe584c896f1a54c
 clang==16.*
+capstone==5.0.9
+pefile==2024.8.26
 pyyaml
