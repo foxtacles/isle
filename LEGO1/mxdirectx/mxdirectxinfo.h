@@ -94,6 +94,7 @@ struct Direct3DDeviceInfo {
 // SIZE 0x0c
 struct MxDisplayMode {
 	MxDisplayMode() {}
+
 	// FUNCTION: BETA10 0x1011f920
 	MxDisplayMode(DWORD p_width, DWORD p_height, DWORD p_bitsPerPixel)
 	{

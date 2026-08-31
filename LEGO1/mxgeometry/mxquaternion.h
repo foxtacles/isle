@@ -18,6 +18,7 @@ public:
 	inline void SetStart(Matrix4& p_m);
 	inline void SetEnd(Matrix4& p_m);
 	inline void SetStart(Vector4& p_v);
+
 	// FUNCTION: BETA10 0x10180bc0
 	void SetEnd(Vector4& p_v)
 	{

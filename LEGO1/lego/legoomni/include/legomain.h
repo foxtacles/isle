@@ -160,6 +160,7 @@ public:
 
 	// FUNCTION: BETA10 0x100e5310
 	LegoNavController* GetNavController() { return m_navController; }
+
 	// FUNCTION: BETA10 0x100e5340
 	LegoPathActor* GetUserActor() { return m_userActor; }
 
@@ -180,8 +181,10 @@ public:
 
 	MxTransitionManager* GetTransitionManager() { return m_transitionManager; }
 	MxDSAction& GetCurrentAction() { return m_action; }
+
 	// FUNCTION: BETA10 0x100e5370
 	LegoCharacterManager* GetCharacterManager() { return m_characterManager; }
+
 	// FUNCTION: BETA10 0x100e5460
 	LegoWorldList* GetWorldList() { return m_worldList; }
 
