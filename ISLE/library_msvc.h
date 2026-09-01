@@ -356,7 +356,7 @@
 /// Globals from libraries without symbols
 
 // STRING: ISLE 0x40f4a4
-static const char* ___crtLCMapStringA_str = "\0";
+// "\0"
 
 // STRING: ISLE 0x40f4a8
-static const wchar_t* ___crtLCMapStringA_wstr = L"\0";
+// L"\0"
