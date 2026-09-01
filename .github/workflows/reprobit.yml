@@ -208,18 +208,16 @@ jobs:
           name: ISLE-Retail-Win32
           path: legobin
 
-      # Temporarily pinned to the fork integration branch carrying the
-      # exact-match comparison fixes; repin to isledecomp/reccmp once the
-      # upstream PRs are merged:
-      # https://github.com/isledecomp/reccmp/pull/523 (one-past-the-end refs)
-      # https://github.com/isledecomp/reccmp/pull/524 (cross-side equivalence)
-      # https://github.com/isledecomp/reccmp/pull/525 (string trailing nulls)
-      # https://github.com/isledecomp/reccmp/pull/526 (CRT startup fallback)
-      # https://github.com/isledecomp/reccmp/pull/527 (span-anchored statics)
+      # Stock reccmp, so the gate below keeps naming the cases that still
+      # cannot be compared exactly. Four remain, each tracked upstream:
+      # https://github.com/isledecomp/reccmp/issues/533 (array end bound)
+      # https://github.com/isledecomp/reccmp/issues/534 (one-sided naming)
+      # https://github.com/isledecomp/reccmp/issues/535 (pointer in a struct)
+      # CONFIG's startup also still wants annotations on our side.
       - name: Install comparison tools
         run: >-
           python -m pip install
-          "reccmp @ git+https://github.com/foxtacles/reccmp@974f6322c5019f33c55b5c108f34c87f3eed3389"
+          "reccmp @ git+https://github.com/isledecomp/reccmp"
           "clang==16.0.6"
           "pyyaml==6.0.3"
           "colorama==0.4.6"
