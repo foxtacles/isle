@@ -209,11 +209,12 @@ jobs:
           path: legobin
 
       # Stock reccmp, so the gate below keeps naming the cases that still
-      # cannot be compared exactly. Four remain, each tracked upstream:
+      # cannot be compared exactly. Two remain, each tracked upstream:
       # https://github.com/isledecomp/reccmp/issues/533 (array end bound)
       # https://github.com/isledecomp/reccmp/issues/534 (one-sided naming)
-      # https://github.com/isledecomp/reccmp/issues/535 (pointer in a struct)
-      # CONFIG's startup also still wants annotations on our side.
+      # The struct with a pointer member from issue 535 is annotated and
+      # skipped by datacmp through report/ignore-variables in
+      # reccmp-project.yml until the comparison can follow the pointer.
       - name: Install comparison tools
         run: >-
           python -m pip install

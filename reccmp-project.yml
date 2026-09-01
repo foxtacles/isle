@@ -16,6 +16,11 @@ targets:
     data-sources:
       - LEGO1/reccmp-strings.csv
       - LEGO1/reccmp-globals.csv
+    report:
+      ignore-variables:
+        # The DirectInput keyboard data format holds a pointer to per-image data
+        # that datacmp would compare as bytes (isledecomp/reccmp#535).
+        - c_dfDIKeyboard
   CONFIG:
     filename: CONFIG.EXE
     source-root: .
