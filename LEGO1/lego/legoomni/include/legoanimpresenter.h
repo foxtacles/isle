@@ -393,10 +393,10 @@ private:
 // List<char *>::~List<char *>
 
 // GLOBAL: LEGO1 0x100f7680
-// _Tree<char const *,pair<char const * const,char const *>,map<char const *,char const *,LegoAnimSubstComparator,allocator<char const *> >::_Kfn,LegoAnimSubstComparator,allocator<char const *> >::_Nil
+// _Tree<char const *,pair<char const * const,char const *>,map<char const *,char const *,LegoAnimSubstComparator,allocator<char const *>>::_Kfn,LegoAnimSubstComparator,allocator<char const *>>::_Nil
 
 // GLOBAL: LEGO1 0x100f7688
-// _Tree<char const *,pair<char const * const,LegoAnimStruct>,map<char const *,LegoAnimStruct,LegoAnimStructComparator,allocator<LegoAnimStruct> >::_Kfn,LegoAnimStructComparator,allocator<LegoAnimStruct> >::_Nil
+// _Tree<char const *,pair<char const * const,LegoAnimStruct>,map<char const *,LegoAnimStruct,LegoAnimStructComparator,allocator<LegoAnimStruct>>::_Kfn,LegoAnimStructComparator,allocator<LegoAnimStruct>>::_Nil
 
 // TEMPLATE: LEGO1 0x1006ddb0 SYMBOL
 // ??1?$_Tree@PBDU?$pair@QBDULegoHideAnimStruct@@@@U_Kfn@?$map@PBDULegoHideAnimStruct@@ULegoHideAnimStructComparator@@V?$allocator@ULegoHideAnimStruct@@@@@@ULegoHideAnimStructComparator@@V?$allocator@ULegoHideAnimStruct@@@@@@QAE@XZ
@@ -423,7 +423,7 @@ private:
 // ?_Insert@?$_Tree@PBDU?$pair@QBDULegoHideAnimStruct@@@@U_Kfn@?$map@PBDULegoHideAnimStruct@@ULegoHideAnimStructComparator@@V?$allocator@ULegoHideAnimStruct@@@@@@ULegoHideAnimStructComparator@@V?$allocator@ULegoHideAnimStruct@@@@@@IAE?AViterator@1@PAU_Node@1
 
 // GLOBAL: LEGO1 0x100f768c
-// _Tree<char const *,pair<char const * const,LegoHideAnimStruct>,map<char const *,LegoHideAnimStruct,LegoHideAnimStructComparator,allocator<LegoHideAnimStruct> >::_Kfn,LegoHideAnimStructComparator,allocator<LegoHideAnimStruct> >::_Nil
+// _Tree<char const *,pair<char const * const,LegoHideAnimStruct>,map<char const *,LegoHideAnimStruct,LegoHideAnimStructComparator,allocator<LegoHideAnimStruct>>::_Kfn,LegoHideAnimStructComparator,allocator<LegoHideAnimStruct>>::_Nil
 // clang-format on
 
 #endif // LEGOANIMPRESENTER_H

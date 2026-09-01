@@ -919,8 +919,8 @@ int MxDirectDraw::FlipToGDISurface()
 // FUNCTION: BETA10 0x101225b9
 void MxDirectDraw::Error(const char* p_message, int p_error)
 {
-	// ~GLOBAL: LEGO1 0x10100c70
-	// ~GLOBAL: BETA10 0x101ff1cc
+	// GLOBAL: LEGO1 0x10100c70
+	// GLOBAL: BETA10 0x101ff1cc
 	static BOOL g_isInsideError = FALSE;
 
 	if (g_isInsideError) {

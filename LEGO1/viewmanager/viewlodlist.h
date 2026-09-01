@@ -150,7 +150,7 @@ private:
 
 // GLOBAL: LEGO1 0x10101068
 // GLOBAL: BETA10 0x10205eb4
-// _Tree<char const *,pair<char const * const,ViewLODList *>,map<char const *,ViewLODList *,ROINameComparator,allocator<ViewLODList *> >::_Kfn,ROINameComparator,allocator<ViewLODList *> >::_Nil
+// _Tree<char const *,pair<char const * const,ViewLODList *>,map<char const *,ViewLODList *,ROINameComparator,allocator<ViewLODList *>>::_Kfn,ROINameComparator,allocator<ViewLODList *>>::_Nil
 
 // TEMPLATE: BETA10 0x101791f0
 // map<char const *,ViewLODList *,ROINameComparator,allocator<ViewLODList *> >::operator[]

@@ -121,7 +121,7 @@ private:
 // ?_Rrotate@?$_Tree@ULegoCacheSoundEntry@@U1@U_Kfn@?$set@ULegoCacheSoundEntry@@USet100d6b4cComparator@@V?$allocator@ULegoCacheSoundEntry@@@@@@USet100d6b4cComparator@@V?$allocator@ULegoCacheSoundEntry@@@@@@IAEXPAU_Node@1@@Z
 
 // GLOBAL: LEGO1 0x100f31cc
-// _Tree<LegoCacheSoundEntry,LegoCacheSoundEntry,set<LegoCacheSoundEntry,Set100d6b4cComparator,allocator<LegoCacheSoundEntry> >::_Kfn,Set100d6b4cComparator,allocator<LegoCacheSoundEntry> >::_Nil
+// _Tree<LegoCacheSoundEntry,LegoCacheSoundEntry,set<LegoCacheSoundEntry,Set100d6b4cComparator,allocator<LegoCacheSoundEntry>>::_Kfn,Set100d6b4cComparator,allocator<LegoCacheSoundEntry>>::_Nil
 // clang-format on
 
 #endif // LEGOCACHESOUNDMANAGER_H

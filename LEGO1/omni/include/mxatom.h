@@ -175,7 +175,7 @@ private:
 // clang-format off
 // GLOBAL: LEGO1 0x101013f0
 // GLOBAL: BETA10 0x10201264
-// _Tree<MxAtom *,MxAtom *,set<MxAtom *,MxAtomCompare,allocator<MxAtom *> >::_Kfn,MxAtomCompare,allocator<MxAtom *> >::_Nil
+// _Tree<MxAtom *,MxAtom *,set<MxAtom *,MxAtomCompare,allocator<MxAtom *>>::_Kfn,MxAtomCompare,allocator<MxAtom *>>::_Nil
 // clang-format on
 
 // clang-format off

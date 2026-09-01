@@ -218,10 +218,10 @@ private:
 // set<LegoPathActor *,LegoPathActorSetCompare,allocator<LegoPathActor *> >::end
 
 // GLOBAL: LEGO1 0x100f11a4
-// _Tree<LegoPathActor *,LegoPathActor *,set<LegoPathActor *,LegoPathActorSetCompare,allocator<LegoPathActor *> >::_Kfn,LegoPathActorSetCompare,allocator<LegoPathActor *> >::_Nil
+// _Tree<LegoPathActor *,LegoPathActor *,set<LegoPathActor *,LegoPathActorSetCompare,allocator<LegoPathActor *>>::_Kfn,LegoPathActorSetCompare,allocator<LegoPathActor *>>::_Nil
 
 // GLOBAL: LEGO1 0x100f3200
-// _Tree<LegoAnimPresenter *,LegoAnimPresenter *,set<LegoAnimPresenter *,LegoAnimPresenterSetCompare,allocator<LegoAnimPresenter *> >::_Kfn,LegoAnimPresenterSetCompare,allocator<LegoAnimPresenter *> >::_Nil
+// _Tree<LegoAnimPresenter *,LegoAnimPresenter *,set<LegoAnimPresenter *,LegoAnimPresenterSetCompare,allocator<LegoAnimPresenter *>>::_Kfn,LegoAnimPresenterSetCompare,allocator<LegoAnimPresenter *>>::_Nil
 // clang-format on
 
 #endif // LEGOPATHBOUNDARY_H

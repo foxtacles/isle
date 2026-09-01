@@ -348,10 +348,10 @@ private:
 // ?_Construct@@YAXPAPAULegoPathCtrlEdge@@ABQAU1@@Z
 
 // GLOBAL: LEGO1 0x100f4360
-// _Tree<LegoPathCtrlEdge *,LegoPathCtrlEdge *,set<LegoPathCtrlEdge *,LegoPathCtrlEdgeCompare,allocator<LegoPathCtrlEdge *> >::_Kfn,LegoPathCtrlEdgeCompare,allocator<LegoPathCtrlEdge *> >::_Nil
+// _Tree<LegoPathCtrlEdge *,LegoPathCtrlEdge *,set<LegoPathCtrlEdge *,LegoPathCtrlEdgeCompare,allocator<LegoPathCtrlEdge *>>::_Kfn,LegoPathCtrlEdgeCompare,allocator<LegoPathCtrlEdge *>>::_Nil
 
 // GLOBAL: LEGO1 0x100f4364
-// _Tree<LegoBEWithMidpoint *,LegoBEWithMidpoint *,multiset<LegoBEWithMidpoint *,LegoBEWithMidpointComparator,allocator<LegoBEWithMidpoint *> >::_Kfn,LegoBEWithMidpointComparator,allocator<LegoBEWithMidpoint *> >::_Nil
+// _Tree<LegoBEWithMidpoint *,LegoBEWithMidpoint *,multiset<LegoBEWithMidpoint *,LegoBEWithMidpointComparator,allocator<LegoBEWithMidpoint *>>::_Kfn,LegoBEWithMidpointComparator,allocator<LegoBEWithMidpoint *>>::_Nil
 // clang-format on
 
 #endif // LEGOPATHCONTROLLER_H

@@ -149,7 +149,7 @@ private:
 // ?_Rrotate@?$_Tree@PADU?$pair@QADPAULegoCharacter@@@@U_Kfn@?$map@PADPAULegoCharacter@@ULegoCharacterComparator@@V?$allocator@PAULegoCharacter@@@@@@ULegoCharacterComparator@@V?$allocator@PAULegoCharacter@@@@@@IAEXPAU_Node@1@@Z
 
 // GLOBAL: LEGO1 0x100fc508
-// _Tree<char *,pair<char * const,LegoCharacter *>,map<char *,LegoCharacter *,LegoCharacterComparator,allocator<LegoCharacter *> >::_Kfn,LegoCharacterComparator,allocator<LegoCharacter *> >::_Nil
+// _Tree<char *,pair<char * const,LegoCharacter *>,map<char *,LegoCharacter *,LegoCharacterComparator,allocator<LegoCharacter *>>::_Kfn,LegoCharacterComparator,allocator<LegoCharacter *>>::_Nil
 // clang-format on
 
 #endif // LEGOCHARACTERMANAGER_H

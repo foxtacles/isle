@@ -205,7 +205,7 @@ protected:
 // ?_Construct@@YAXPAPAVMxCore@@ABQAV1@@Z
 
 // GLOBAL: LEGO1 0x100f11a0
-// _Tree<MxCore *,MxCore *,set<MxCore *,CoreSetCompare,allocator<MxCore *> >::_Kfn,CoreSetCompare,allocator<MxCore *> >::_Nil
+// _Tree<MxCore *,MxCore *,set<MxCore *,CoreSetCompare,allocator<MxCore *>>::_Kfn,CoreSetCompare,allocator<MxCore *>>::_Nil
 // clang-format on
 
 #endif // LEGOWORLD_H
