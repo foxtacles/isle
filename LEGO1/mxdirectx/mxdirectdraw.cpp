@@ -306,6 +306,7 @@ BOOL MxDirectDraw::IsSupportedMode(int width, int height, int bpp)
 // FUNCTION: BETA10 0x10120efb
 void EnableResizing(HWND p_hwnd, BOOL p_flag)
 {
+	// GLOBAL: LEGO1 0x10109594
 	static DWORD g_dwStyle;
 
 	if (!p_flag) {
