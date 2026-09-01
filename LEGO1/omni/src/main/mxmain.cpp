@@ -17,6 +17,7 @@
 #include "mxtimer.h"
 #include "mxvariabletable.h"
 #include "mxvideomanager.h"
+
 // GLOBAL: LEGO1 0x101015b0
 MxOmni* MxOmni::g_instance = NULL;
 
@@ -28,6 +29,9 @@ char g_cdPath[1024] = "E:";
 
 // GLOBAL: LEGO1 0x10101db8
 MxBool g_use3dSound = FALSE;
+
+DECOMP_SIZE_ASSERT(MxOmniCreateFlags, 0x02)
+DECOMP_SIZE_ASSERT(MxOmniCreateParam, 0x40)
 
 // FUNCTION: LEGO1 0x100aef10
 MxOmni::MxOmni()
@@ -437,8 +441,6 @@ void MxOmni::Resume()
 	}
 }
 
-DECOMP_SIZE_ASSERT(MxOmniCreateFlags, 0x02)
-
 // FUNCTION: LEGO1 0x100b0a30
 // FUNCTION: BETA10 0x10130a1c
 MxOmniCreateFlags::MxOmniCreateFlags()
@@ -455,8 +457,6 @@ MxOmniCreateFlags::MxOmniCreateFlags()
 	m_flags2.m_bit1 = TRUE; // CreateTimer
 	m_flags2.m_bit2 = TRUE; // CreateStreamer
 }
-
-DECOMP_SIZE_ASSERT(MxOmniCreateParam, 0x40)
 
 // FUNCTION: LEGO1 0x100b0b00
 // FUNCTION: BETA10 0x10130b6b

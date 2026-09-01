@@ -168,6 +168,7 @@ void TextureDestroyCallback(IDirect3DRMObject* pObject, void* pArg)
 	delete pImage;
 	pObject->SetAppData(0);
 }
+
 // FUNCTION: LEGO1 0x100a1330
 // FUNCTION: BETA10 0x101692e1
 Image::Image(int width, int height, int depth, void* pBuffer, int useBuffer, int paletteSize, PaletteEntry* pEntries)
