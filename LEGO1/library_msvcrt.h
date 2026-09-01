@@ -1,6 +1,2 @@
-#if 0
-
 // LIBRARY: LEGO1 0x10091ee0
 // _DllMain@12
-
-#endif
