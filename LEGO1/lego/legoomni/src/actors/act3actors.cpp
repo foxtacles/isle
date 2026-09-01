@@ -102,6 +102,7 @@ Act3Actor::Act3Actor()
 // FUNCTION: BETA10 0x100180ab
 MxU32 Act3Actor::StepState(float p_time, Matrix4& p_transform)
 {
+	// GLOBAL: LEGO1 0x100d75e4
 	static const float g_hitAnimationDelay = 2000.0f;
 
 	// Note: Code duplication with LegoExtraActor::StepState

@@ -54,6 +54,7 @@ LegoExtraActor::~LegoExtraActor()
 // FUNCTION: BETA10 0x10080b4c
 MxU32 LegoExtraActor::StepState(float p_time, Matrix4& p_transform)
 {
+	// GLOBAL: LEGO1 0x100d6b64
 	static const float g_hitAnimationDelay = 2000.0f;
 
 	switch (m_actorState & c_maxState) {

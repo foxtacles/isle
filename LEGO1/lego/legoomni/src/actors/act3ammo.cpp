@@ -15,6 +15,7 @@
 
 DECOMP_SIZE_ASSERT(Act3Ammo, 0x1a0)
 
+// GLOBAL: LEGO1 0x100d841c
 static const float g_hitAnimationDelay = 2000.0f;
 
 // Initialized at LEGO1 0x100537c0
