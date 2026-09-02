@@ -818,7 +818,7 @@ MxResult LegoPathController::FindPath(
 
 			if (otherFace != NULL && edge->BETA_1004a830(*otherFace, p_mask)) {
 				if (p_newBoundary == otherFace) {
-					if ((dist = edge->DistanceToMidpoint(p_oldPosition) + edge->DistanceToMidpoint(p_newPosition)) <
+					if ((dist = edge->DistanceToMidpoint(p_newPosition) + edge->DistanceToMidpoint(p_oldPosition)) <
 						minDistance) {
 						minDistance = dist;
 						p_grec->erase(p_grec->begin(), p_grec->end());

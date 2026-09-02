@@ -127,10 +127,10 @@ jobs:
           QUARANTINE_RANGES: ${{ steps.reprobit.outputs.quarantine-ranges }}
           QUARANTINE_DIGEST: ${{ steps.reprobit.outputs.quarantine-digest }}
           # The reviewed quarantine boundary this repository accepts.
-          EXPECTED_QUARANTINE_COUNT: "2"
-          EXPECTED_QUARANTINE_BYTES: "572"
-          EXPECTED_QUARANTINE_RANGES: "23"
-          EXPECTED_QUARANTINE_DIGEST: "f55d274cf6948c6f944794b03686e52f86ef060ba487cc152d3ff1140edf5ba2"
+          EXPECTED_QUARANTINE_COUNT: "1"
+          EXPECTED_QUARANTINE_BYTES: "87"
+          EXPECTED_QUARANTINE_RANGES: "6"
+          EXPECTED_QUARANTINE_DIGEST: "65b2c87db2feba93c3b54dac2999d960805376de88729ac564a459af841879f4"
         run: .github/scripts/check-reprobit-publications.ps1
 
       - name: Export the matching effective source view
