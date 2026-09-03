@@ -757,6 +757,12 @@
 // GLOBAL: LEGO1 0x10109718
 // __pRawDllMain
 
+// GLOBAL: LEGO1 0x1010971c
+// ___onexitend
+
+// GLOBAL: LEGO1 0x10109720
+// ___onexitbegin
+
 // GLOBAL: LEGO1 0x10109724
 // ___piob
 

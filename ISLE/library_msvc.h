@@ -347,6 +347,12 @@
 // GLOBAL: ISLE 0x4139b0
 // __nhandle
 
+// GLOBAL: ISLE 0x4139b4
+// ___onexitend
+
+// GLOBAL: ISLE 0x4139b8
+// ___onexitbegin
+
 // GLOBAL: ISLE 0x4139bc
 // __FPinit
 
