@@ -8,6 +8,8 @@
 #include "mxregion.h"
 #include "mxvideomanager.h"
 
+#include <assert.h>
+
 DECOMP_SIZE_ASSERT(MxVideoPresenter, 0x64);
 DECOMP_SIZE_ASSERT(MxVideoPresenter::AlphaMask, 0x0c);
 
@@ -195,7 +197,7 @@ MxBool MxVideoPresenter::IsHit(MxS32 p_x, MxS32 p_y)
 	return TRUE;
 }
 
-inline MxS32 MxVideoPresenter::PrepareRects(RECT& p_rectDest, RECT& p_rectSrc)
+inline MxS32 PrepareRects(RECT& p_rectSrc, RECT& p_rectDest)
 {
 	if (p_rectDest.top > 480 || p_rectDest.left > 640 || p_rectSrc.top > 480 || p_rectSrc.left > 640) {
 		return -1;
@@ -239,7 +241,7 @@ void MxVideoPresenter::PutFrame()
 	MxRegion* region = MVideoManager()->GetRegion();
 	MxRect32 rect(MxPoint32(GetX(), GetY()), MxSize32(GetWidth(), GetHeight()));
 	LPDIRECTDRAWSURFACE ddSurface = displaySurface->GetDirectDrawSurface2();
-	MxRect32* regionRect;
+	HRESULT r = DD_OK;
 
 	if (m_action->GetFlags() & MxDSAction::c_bit5) {
 		if (m_surface) {
@@ -254,13 +256,14 @@ void MxVideoPresenter::PutFrame()
 			dest.right = dest.left + GetWidth();
 			dest.bottom = dest.top + GetHeight();
 
-			switch (PrepareRects(dest, src)) {
+			switch (PrepareRects(src, dest)) {
 			case 0:
-				ddSurface->Blt(&dest, m_surface, &src, DDBLT_KEYSRC, NULL);
+				r = ddSurface->Blt(&dest, m_surface, &src, DDBLT_KEYSRC, NULL);
 				break;
 			case 1:
-				ddSurface->BltFast(dest.left, dest.top, m_surface, &src, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
+				r = ddSurface->BltFast(dest.left, dest.top, m_surface, &src, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
 			}
+			assert(r == DD_OK);
 		}
 		else {
 			displaySurface->VTable0x30(
@@ -276,6 +279,7 @@ void MxVideoPresenter::PutFrame()
 		}
 	}
 	else {
+		MxRect32* regionRect;
 		MxRegionCursor cursor(region);
 
 		while ((regionRect = cursor.Next(rect))) {
@@ -296,8 +300,9 @@ void MxVideoPresenter::PutFrame()
 
 				if (m_action->GetFlags() & MxDSAction::c_bit4) {
 					if (m_surface) {
-						if (PrepareRects(dest, src) >= 0) {
-							ddSurface->Blt(&dest, m_surface, &src, DDBLT_KEYSRC, NULL);
+						if (PrepareRects(src, dest) >= 0) {
+							r = ddSurface->Blt(&dest, m_surface, &src, DDBLT_KEYSRC, NULL);
+							assert(r == DD_OK);
 						}
 					}
 					else {
@@ -314,8 +319,9 @@ void MxVideoPresenter::PutFrame()
 					}
 				}
 				else if (m_surface) {
-					if (PrepareRects(dest, src) >= 0) {
-						ddSurface->Blt(&dest, m_surface, &src, 0, NULL);
+					if (PrepareRects(src, dest) >= 0) {
+						r = ddSurface->Blt(&dest, m_surface, &src, 0, NULL);
+						assert(r == DD_OK);
 					}
 				}
 				else {
