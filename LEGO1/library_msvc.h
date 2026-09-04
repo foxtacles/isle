@@ -1060,7 +1060,7 @@
 // The rgodf member points at each image's own copy of the keyboard object
 // data, so datacmp cannot compare the variable and skips it through
 // report/ignore-variables in reccmp-project.yml.
-// https://github.com/isledecomp/reccmp/issues/535
+// https://github.com/isledecomp/reccmp/issues/226
 
 // GLOBAL: LEGO1 0x10098f80
 // c_dfDIKeyboard

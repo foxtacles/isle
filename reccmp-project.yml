@@ -19,7 +19,7 @@ targets:
     report:
       ignore-variables:
         # The DirectInput keyboard data format holds a pointer to per-image data
-        # that datacmp would compare as bytes (isledecomp/reccmp#535).
+        # that datacmp would compare as bytes (isledecomp/reccmp#226).
         - c_dfDIKeyboard
   CONFIG:
     filename: CONFIG.EXE
