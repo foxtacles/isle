@@ -91,7 +91,8 @@ jobs:
     - name: Provision MSVC 4.2
       shell: pwsh
       run: |
-        python -m pip install "git+https://github.com/isledecomp/reprobit.git@master"
+        $revision = (Get-Content .github/reprobit-revision -Raw).Trim()
+        python -m pip install "git+https://github.com/isledecomp/reprobit.git@$revision"
         rbit toolchain provision --destination "$env:RUNNER_TEMP\msvc42" --no-save
 
     - name: Build
@@ -141,7 +142,8 @@ jobs:
     - name: Provision MSVC 4.2
       shell: pwsh
       run: |
-        python -m pip install "git+https://github.com/isledecomp/reprobit.git@master"
+        $revision = (Get-Content .github/reprobit-revision -Raw).Trim()
+        python -m pip install "git+https://github.com/isledecomp/reprobit.git@$revision"
         rbit toolchain provision --destination "$env:RUNNER_TEMP\msvc42" --no-save
 
     - name: Build

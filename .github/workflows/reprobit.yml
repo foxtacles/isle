@@ -64,11 +64,18 @@ jobs:
 
       - uses: actions/checkout@v7
 
+      - name: Read the reviewed ReproBit revision
+        id: reprobit-revision
+        shell: pwsh
+        run: |
+          $revision = (Get-Content .github/reprobit-revision -Raw).Trim()
+          "revision=$revision" >> $env:GITHUB_OUTPUT
+
       - name: Check out ReproBit once for provisioning and verification
         uses: actions/checkout@v7
         with:
           repository: isledecomp/reprobit
-          ref: master
+          ref: ${{ steps.reprobit-revision.outputs.revision }}
           path: .reprobit-action
           persist-credentials: false
 

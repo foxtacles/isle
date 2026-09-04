@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
-# Gate the ReproBit run outcome: every certification claim must hold, the two
-# reviewed quarantine exceptions must match their pinned fingerprint (passed in
+# Gate the ReproBit run outcome: every certification claim must hold, the
+# reviewed quarantine exception set must match its pinned fingerprint (passed in
 # by the workflow), the expected publications must exist, and the byte-exact
 # binaries must hash identical to the authenticated retail references.
 $ErrorActionPreference = "Stop"
@@ -16,7 +16,7 @@ foreach ($claim in @("CLEAN", "TOOLCHAIN_ORIGIN")) {
   }
 }
 if ($env:QUARANTINED -ne "true") {
-  throw "ISLE's two reviewed quarantine exceptions did not run"
+  throw "ISLE's reviewed quarantine exception set did not run"
 }
 $expectedQuarantine = @{
   QUARANTINE_COUNT = $env:EXPECTED_QUARANTINE_COUNT
