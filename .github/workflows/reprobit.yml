@@ -117,6 +117,7 @@ jobs:
         with:
           project-directory: .
           toolchain-root: ${{ runner.temp }}\msvc42
+          jobs: "8"
           report-directory: build/reprobit-report
 
       - name: Check exact and comparison publications
