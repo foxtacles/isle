@@ -1656,11 +1656,10 @@ void LegoCharacterManager::ReleaseActor(LegoROI* p_roi)
 // FUNCTION: LEGO1 0x10083f10
 void LegoCharacterManager::ReleaseAutoROI(LegoROI* p_roi)
 {
-	LegoCharacter* character = NULL;
 	LegoCharacterMap::iterator it;
 
 	for (it = m_characters->begin(); it != m_characters->end(); it++) {
-		character = (*it).second;
+		LegoCharacter* character = (*it).second;
 
 		if (character->m_roi == p_roi) {
 			if (character->RemoveRef() == 0) {
