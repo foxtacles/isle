@@ -46,22 +46,23 @@ void MxRegion::AddRect(MxRect32& p_rect)
 			rect.SetTop(rect.GetBottom());
 		}
 		else if (rect.GetTop() < span->GetMax()) {
+			MxSpan* newSpan;
 			if (rect.GetTop() < span->GetMin()) {
 				newRect = rect;
 				newRect.SetBottom(span->GetMin());
-				MxSpan* newSpan = new MxSpan(newRect);
+				newSpan = new MxSpan(newRect);
 				cursor.Prepend(newSpan);
 				rect.SetTop(span->GetMin());
 			}
 			else if (span->GetMin() < rect.GetTop()) {
-				MxSpan* newSpan = span->Clone();
+				newSpan = span->Clone();
 				newSpan->SetMax(rect.GetTop());
 				span->SetMin(rect.GetTop());
 				cursor.Prepend(newSpan);
 			}
 
 			if (rect.GetBottom() < span->GetMax()) {
-				MxSpan* newSpan = span->Clone();
+				newSpan = span->Clone();
 				newSpan->SetMax(rect.GetBottom());
 				span->SetMin(rect.GetBottom());
 				newSpan->AddSegment(rect.GetLeft(), rect.GetRight());
