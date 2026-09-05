@@ -941,9 +941,9 @@ MxResult Act3Brickster::FUN_100417c0()
 	if (grec != NULL) {
 		Mx3DPointFloat local150;
 
-		LegoPathEdgeContainer *local1c4, *local1c8; // unused
+		LegoPathEdgeContainer* local1c8; // unused
 		if (m_grec != NULL) {
-			local1c4 = local1c8 = m_grec;
+			local1c8 = m_grec;
 			delete m_grec;
 		}
 
