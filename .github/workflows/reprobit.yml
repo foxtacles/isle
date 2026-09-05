@@ -141,7 +141,7 @@ jobs:
         run: .github/scripts/check-reprobit-publications.ps1
 
       - name: Export the matching effective source view
-        run: rbit source export build/reprobit-debug/source
+        run: rbit source export . --destination build/reprobit-debug/source
 
       - name: Upload matched comparison files
         uses: actions/upload-artifact@v7
