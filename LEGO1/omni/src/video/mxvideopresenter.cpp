@@ -325,12 +325,14 @@ void MxVideoPresenter::PutFrame()
 					}
 				}
 				else {
+					MxS32 top = regionRect->GetTop();
+					MxS32 left = regionRect->GetLeft();
 					displaySurface->VTable0x28(
 						m_frameBitmap,
-						regionRect->GetLeft() - GetX(),
-						regionRect->GetTop() - GetY(),
-						regionRect->GetLeft(),
-						regionRect->GetTop(),
+						left - GetX(),
+						top - GetY(),
+						left,
+						top,
 						regionRect->GetWidth(),
 						regionRect->GetHeight()
 					);

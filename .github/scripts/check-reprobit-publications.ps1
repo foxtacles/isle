@@ -1,22 +1,18 @@
 #!/usr/bin/env pwsh
-# Gate the ReproBit run outcome: every certification claim must hold, the
-# reviewed quarantine exception set must match its pinned fingerprint (passed in
-# by the workflow), the expected publications must exist, and the byte-exact
-# binaries must hash identical to the authenticated retail references.
+# Gate the ReproBit run outcome: every certification claim must hold, the run
+# must be clean (no reference-byte exception ran; the pinned boundary passed in
+# by the workflow is the empty one), the expected publications must exist, and
+# the byte-exact binaries must hash identical to the authenticated retail
+# references.
 $ErrorActionPreference = "Stop"
 
-foreach ($claim in @("ACCEPTED", "BYTE_EXACT", "LOGIC_CERTIFIED", "REPORT_PRODUCED")) {
+foreach ($claim in @("ACCEPTED", "BYTE_EXACT", "LOGIC_CERTIFIED", "TOOLCHAIN_ORIGIN", "REPORT_PRODUCED", "CLEAN")) {
   if ((Get-Item "env:$claim").Value -ne "true") {
     throw "ReproBit did not certify $claim"
   }
 }
-foreach ($claim in @("CLEAN", "TOOLCHAIN_ORIGIN")) {
-  if ((Get-Item "env:$claim").Value -ne "false") {
-    throw "ISLE's reviewed quarantine boundary unexpectedly changed $claim"
-  }
-}
-if ($env:QUARANTINED -ne "true") {
-  throw "ISLE's reviewed quarantine exception set did not run"
+if ($env:QUARANTINED -ne "false") {
+  throw "A reference-byte exception ran; ISLE no longer accepts any"
 }
 $expectedQuarantine = @{
   QUARANTINE_COUNT = $env:EXPECTED_QUARANTINE_COUNT

@@ -20,15 +20,7 @@ toolchain = "Z:\\Users\\foxtacles\\Projects\\MSVC420"
 kind = "literal"
 
 [authenticity]
-policy = "allow-quarantine"
-
-[[authenticity.legacy_allowlist]]
-intervention_id = "fn_dd28ceb1c15db3c7"
-allowlist_digest = { algorithm = "sha256", value = "999802bf7a9fddb4c6b3ee506fbf344450a42a7a687bb4e3708927a2dc04f6e7" }
-proof_receipt_digest = { algorithm = "sha256", value = "4b31accb0e54ce14b1786b97a98b0d84f3e647069f29082f2b32cd66037489b6" }
-range_count = 1
-byte_count = 41
-maximum_oracle_payload_bytes = 1260
+policy = "clean"
 
 [layout]
 build_plan = "reprobit/build-plan.json"
