@@ -1517,8 +1517,7 @@ void Infocenter::PlayAction(InfomainScript::Script p_script)
 
 	m_currentInfomainScript = p_script;
 
-	MxBackgroundAudioManager* backgroundAudioManager = BackgroundAudioManager();
-	backgroundAudioManager->LowerVolume();
+	BackgroundAudioManager()->LowerVolume();
 	Start(&action);
 }
 
