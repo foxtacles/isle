@@ -11,9 +11,42 @@ permissions:
 
 concurrency:
   group: build-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  # The ReproBit publish job collects this workflow's developer-build
+  # accuracy reports for the same master commit, so let master runs finish.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
+  fetch-deps:
+    name: Download original binaries
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download the three retail references
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir legobin
+          curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 \
+            -fLSs https://legoisland.org/download/CONFIG.EXE -o legobin/CONFIG.EXE
+          curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 \
+            -fLSs https://legoisland.org/download/ISLE.EXE -o legobin/ISLE.EXE
+          curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 \
+            -fLSs https://legoisland.org/download/LEGO1.DLL -o legobin/LEGO1.DLL
+          cd legobin
+          sha256sum --check <<'EOF'
+          864766d024d78330fed5e1f6efb2faf815f1b1c3405713a9718059dc9a54e52c  CONFIG.EXE
+          5cf57c284973fce9d14f5677a2e4435fd989c5e938970764d00c8932ed5128ca  ISLE.EXE
+          14645225bbe81212e9bc1919cd8a692b81b8622abb6561280d99b0fc4151ce17  LEGO1.DLL
+          EOF
+
+      - name: Upload authenticated retail references
+        uses: actions/upload-artifact@v7
+        with:
+          name: ISLE-Retail-Win32
+          path: legobin/
+          if-no-files-found: error
+          retention-days: 1
+
   build-current-toolchain:
     name: Current ${{ matrix.toolchain.name }}
     runs-on: windows-latest
@@ -117,6 +150,104 @@ jobs:
           build/LEGO1.DLL
           build/LEGO1.PDB
         if-no-files-found: error
+
+  # The traditional reccmp comparison on the plain developer build, scored
+  # against the last developer build published from master. It is
+  # informative only: the ReproBit workflow's exact verification is the gate,
+  # so this job never fails the workflow, and its reports are published to
+  # the continuous release with a -dev suffix.
+  compare:
+    name: Compare the developer build
+    needs: [build, fetch-deps]
+    runs-on: windows-2022
+    timeout-minutes: 30
+    continue-on-error: true
+
+    steps:
+    - uses: actions/checkout@v7
+
+    - uses: actions/setup-python@v7
+      with:
+        python-version: '3.11'
+        cache: pip
+
+    - name: Download the developer build
+      uses: actions/download-artifact@v8
+      with:
+        name: CMake-MSVC420-Development
+        path: build
+
+    - name: Restore original binaries
+      uses: actions/download-artifact@v8
+      with:
+        name: ISLE-Retail-Win32
+        path: legobin
+
+    - name: Install comparison tools
+      run: >-
+        python -m pip install
+        "reccmp @ git+https://github.com/isledecomp/reccmp"
+        "clang==16.0.6"
+        "pyyaml==6.0.3"
+        "colorama==0.4.6"
+
+    - name: Detect original and recompiled binaries
+      shell: bash
+      run: |
+        reccmp-project detect --what original --search-path legobin
+        reccmp-project detect --what recompiled --search-path build
+
+    - name: Summarize accuracy
+      shell: bash
+      run: |
+        reccmp-reccmp -S CONFIGPROGRESS-dev.SVG --svg-icon assets/config.png --target CONFIG --json CONFIGPROGRESS-dev.json --html CONFIGPROGRESS-dev.HTML
+        reccmp-reccmp -S ISLEPROGRESS-dev.SVG --svg-icon assets/isle.png --target ISLE --json ISLEPROGRESS-dev.json --html ISLEPROGRESS-dev.HTML
+        reccmp-reccmp -S LEGO1PROGRESS-dev.SVG --svg-icon assets/lego1.png --target LEGO1 --json LEGO1PROGRESS-dev.json --html LEGO1PROGRESS-dev.HTML
+
+    - name: Compare accuracy with the last developer build on master
+      shell: bash
+      env:
+        RELEASE_URL: https://github.com/isledecomp/isle/releases/download/continuous
+      run: |
+        set -euo pipefail
+        for target in CONFIG ISLE LEGO1; do
+          baseline="${target}PROGRESS-dev-old.json"
+          if curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 -fLSs -o "$baseline" "$RELEASE_URL/${target}PROGRESS-dev.json"; then
+            reccmp-reccmp --target "$target" --diff "$baseline"
+          else
+            rm -f "$baseline"
+            echo "::notice::The continuous release has no developer-build ${target} report to compare against yet"
+          fi
+        done
+
+    - name: Check exports, vtables, and variables
+      shell: bash
+      run: |
+        reccmp-verexp --target LEGO1
+        reccmp-vtable --target CONFIG
+        reccmp-vtable --target ISLE
+        reccmp-vtable --target LEGO1
+        reccmp-datacmp --target CONFIG
+        reccmp-datacmp --target ISLE
+        reccmp-datacmp --target LEGO1
+
+    - name: Upload developer-build accuracy reports
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: CMake-MSVC420-Accuracy-Report
+        path: |
+          CONFIGPROGRESS-dev.json
+          CONFIGPROGRESS-dev.SVG
+          CONFIGPROGRESS-dev.HTML
+          ISLEPROGRESS-dev.json
+          ISLEPROGRESS-dev.SVG
+          ISLEPROGRESS-dev.HTML
+          LEGO1PROGRESS-dev.json
+          LEGO1PROGRESS-dev.SVG
+          LEGO1PROGRESS-dev.HTML
+        if-no-files-found: warn
+        retention-days: 14
 
   build-beta:
     name: 'MSVC 4.20 (BETA10)'

@@ -373,6 +373,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      # Reading the Build workflow run of this commit for its developer-build
+      # accuracy reports.
+      actions: read
 
     steps:
       - name: Check out the publish scripts
@@ -411,24 +414,39 @@ jobs:
           set -euo pipefail
           (cd reprobit-debug && zip -rq ../ReproBit-Debug-Companion.zip .)
 
+      # The Build workflow scores the plain developer build with reccmp in
+      # parallel; its -dev reports join the release when that run finishes in
+      # time. They are informative only and never hold up the release.
+      - name: Fetch the developer-build accuracy reports
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: .github/scripts/fetch-developer-accuracy.sh developer-accuracy
+
       - name: Publish complete continuous release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-        run: >-
-          .github/scripts/publish-continuous-release.sh
-          build/CONFIG.EXE
-          build/ISLE.EXE
-          build/LEGO1.DLL
-          CONFIGPROGRESS.json
-          CONFIGPROGRESS.SVG
-          ISLEPROGRESS.json
-          ISLEPROGRESS.SVG
-          LEGO1PROGRESS.json
-          LEGO1PROGRESS.SVG
-          reprobit-report/report.html
-          reprobit-report/report.json
-          ReproBit-Debug-Companion.zip
+        run: |
+          set -euo pipefail
+          files=(
+            build/CONFIG.EXE
+            build/ISLE.EXE
+            build/LEGO1.DLL
+            CONFIGPROGRESS.json
+            CONFIGPROGRESS.SVG
+            ISLEPROGRESS.json
+            ISLEPROGRESS.SVG
+            LEGO1PROGRESS.json
+            LEGO1PROGRESS.SVG
+            reprobit-report/report.html
+            reprobit-report/report.json
+            ReproBit-Debug-Companion.zip
+          )
+          if compgen -G "developer-accuracy/*" > /dev/null; then
+            files+=(developer-accuracy/*)
+          fi
+          .github/scripts/publish-continuous-release.sh "${files[@]}"
 
   pages:
     name: Publish progress pages
