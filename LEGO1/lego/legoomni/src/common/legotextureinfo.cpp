@@ -66,6 +66,7 @@ LegoTextureInfo* LegoTextureInfo::Create(const char* p_name, LegoTexture* p_text
 
 	LPDIRECTDRAW pDirectDraw = VideoManager()->GetDirect3D()->DirectDraw();
 	LegoImage* image = p_texture->GetImage();
+	MxS32 i;
 
 	DDSURFACEDESC desc;
 	memset(&desc, 0, sizeof(desc));
@@ -78,7 +79,6 @@ LegoTextureInfo* LegoTextureInfo::Create(const char* p_name, LegoTexture* p_text
 	desc.ddpfPixelFormat.dwFlags = DDPF_RGB | DDPF_PALETTEINDEXED8;
 	desc.ddpfPixelFormat.dwRGBBitCount = 8;
 
-	MxS32 i;
 	const LegoU8* bits;
 	MxU8* surface;
 
@@ -200,6 +200,7 @@ BOOL LegoTextureInfo::GetGroupTexture(Tgl::Mesh* pMesh, LegoTextureInfo*& p_text
 LegoResult LegoTextureInfo::LoadBits(const LegoU8* p_bits)
 {
 	if (m_surface != NULL && m_texture != NULL) {
+		MxS32 i;
 		DDSURFACEDESC desc;
 		memset(&desc, 0, sizeof(desc));
 		desc.dwSize = sizeof(desc);
@@ -212,7 +213,7 @@ LegoResult LegoTextureInfo::LoadBits(const LegoU8* p_bits)
 				memcpy(desc.lpSurface, p_bits, desc.dwWidth * desc.dwHeight);
 			}
 			else {
-				for (MxS32 i = 0; i < desc.dwHeight; i++) {
+				for (i = 0; i < desc.dwHeight; i++) {
 					memcpy(surface, bits, desc.dwWidth);
 					surface += desc.lPitch;
 					bits += desc.dwWidth;

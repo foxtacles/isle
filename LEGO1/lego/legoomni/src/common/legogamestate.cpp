@@ -276,11 +276,11 @@ MxResult LegoGameState::Save(MxULong p_slot)
 	}
 
 	MxResult result = FAILURE;
+	MxS32 j;
 	LegoFile storage;
 	MxVariableTable* variableTable = VariableTable();
 	MxS16 count = 0;
 	MxU32 i;
-	MxS32 j;
 	MxU16 area;
 
 	MxString savePath;
@@ -376,7 +376,7 @@ MxResult LegoGameState::Load(MxULong p_slot)
 
 	MxS32 version;
 	MxU32 status;
-	MxS16 count, actArea;
+	MxS16 i, count, actArea;
 	const char* lightPosition;
 
 	storage.ReadS32(version);
@@ -426,7 +426,7 @@ MxResult LegoGameState::Load(MxULong p_slot)
 	storage.ReadS16(count);
 
 	if (count) {
-		for (MxS16 i = 0; i < count; i++) {
+		for (i = 0; i < count; i++) {
 			storage.ReadString(stateName);
 
 			LegoState* state = GetState(stateName);

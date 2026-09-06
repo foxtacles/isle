@@ -302,8 +302,8 @@ LegoAnimNodeData::~LegoAnimNodeData()
 LegoResult LegoAnimNodeData::Read(LegoStorage* p_storage)
 {
 	LegoResult result;
-	LegoU32 length;
 	LegoU32 i;
+	LegoU32 length;
 
 	if ((result = p_storage->Read(&length, sizeof(LegoU32))) != SUCCESS) {
 		return result;

@@ -557,6 +557,7 @@ void MxDirectDraw::ClearBackBuffers()
 {
 	HRESULT result;
 	byte* line;
+	int j;
 	DDSURFACEDESC ddsd;
 	int count = m_bFlipSurfaces ? 2 : 1;
 	int value = 0;
@@ -578,7 +579,7 @@ void MxDirectDraw::ClearBackBuffers()
 
 		// clear backBuffer
 		line = (byte*) ddsd.lpSurface;
-		for (int j = ddsd.dwHeight; j--;) {
+		for (j = ddsd.dwHeight; j--;) {
 			memset(line, value, ddsd.dwWidth);
 			line += ddsd.lPitch;
 		}
