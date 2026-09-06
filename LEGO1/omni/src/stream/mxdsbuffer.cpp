@@ -464,15 +464,14 @@ void MxDSBuffer::FUN_100c6f80(MxU32 p_writeOffset)
 // FUNCTION: BETA10 0x101582f2
 MxU8* MxDSBuffer::FUN_100c6fa0(MxU8* p_data)
 {
-	MxU8* volatile current = p_data ? p_data : m_pBuffer;
+	MxU8* current = p_data ? p_data : m_pBuffer;
 
 	while (current <= m_writeOffset + m_pBuffer - 8) {
-		switch (*(MxU32*) current) {
+		switch (**(MxU32**) &current) {
 		case FOURCC('M', 'x', 'O', 'b'):
 		case FOURCC('M', 'x', 'C', 'h'):
 			if (current == p_data) {
-				MxU32 size = *(MxU32*) (current + 4);
-				current += (size & 1) + size;
+				current += (*(MxU32*) (current + 4) & 1) + *(MxU32*) (current + 4);
 				current += 8;
 			}
 			else {
