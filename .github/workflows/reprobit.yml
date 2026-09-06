@@ -217,6 +217,12 @@ jobs:
           name: ISLE-Retail-Win32
           path: legobin
 
+      - name: Download ReproBit verification report
+        uses: actions/download-artifact@v8
+        with:
+          name: ReproBit-Verification-Report
+          path: build/reprobit-report
+
       # Stock reccmp. The summary step below names the cases that still
       # cannot be compared exactly without failing the job; the published
       # reccmp reports are the result. Two remain, each tracked upstream:
@@ -270,6 +276,19 @@ jobs:
           curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 -fLSs -o "$GITHUB_WORKSPACE/CONFIGPROGRESS-old.json" "$RELEASE_URL/CONFIGPROGRESS.json"
           curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 -fLSs -o "$GITHUB_WORKSPACE/ISLEPROGRESS-old.json" "$RELEASE_URL/ISLEPROGRESS.json"
           curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 -fLSs -o "$GITHUB_WORKSPACE/LEGO1PROGRESS-old.json" "$RELEASE_URL/LEGO1PROGRESS.json"
+          # The ReproBit baseline exists once master has published a
+          # verified release; until then the cost comparison says so.
+          if ! curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 -fLSs -o "$GITHUB_WORKSPACE/report-old.json" "$RELEASE_URL/report.json"; then
+            rm -f "$GITHUB_WORKSPACE/report-old.json"
+            echo "::notice::The continuous release has no ReproBit report.json to compare against"
+          fi
+
+      - name: Compare the ReproBit cost with the continuous release
+        shell: bash
+        run: >-
+          python .github/scripts/compare-reprobit-cost.py
+          build/reprobit-report/report.json
+          report-old.json
 
       - name: Show comparison with the continuous release
         shell: bash
@@ -429,6 +448,14 @@ jobs:
         with:
           name: ReproBit-Accuracy-Report
 
+      - name: Download ReproBit verification report
+        uses: actions/download-artifact@v8
+        with:
+          name: ReproBit-Verification-Report
+          path: reprobit-report
+
+      # The README links every report from here. report.html is
+      # self-contained and links the full report.json record beside it.
       - name: Prepare the progress pages
         run: |
           set -euo pipefail
@@ -436,6 +463,7 @@ jobs:
           cp CONFIGPROGRESS.SVG CONFIGPROGRESS.HTML progress/
           cp ISLEPROGRESS.SVG ISLEPROGRESS.HTML progress/
           cp LEGO1PROGRESS.SVG LEGO1PROGRESS.HTML progress/
+          cp reprobit-report/report.html reprobit-report/report.json progress/
 
       - name: Upload the pages artifact
         uses: actions/upload-pages-artifact@v3
