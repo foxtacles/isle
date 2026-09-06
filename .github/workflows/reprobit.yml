@@ -11,45 +11,12 @@ permissions:
 
 concurrency:
   group: reprobit-${{ github.event.pull_request.number || github.ref }}
-  # A master run may be replacing the continuous release. Let it finish so a
-  # newer push cannot interrupt publication halfway through.
+  # A master run replaces the continuous release; let it finish.
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
-  fetch-deps:
-    name: Download original binaries
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Download the three retail references
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir legobin
-          curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 \
-            -fLSs https://legoisland.org/download/CONFIG.EXE -o legobin/CONFIG.EXE
-          curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 \
-            -fLSs https://legoisland.org/download/ISLE.EXE -o legobin/ISLE.EXE
-          curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 \
-            -fLSs https://legoisland.org/download/LEGO1.DLL -o legobin/LEGO1.DLL
-          cd legobin
-          sha256sum --check <<'EOF'
-          864766d024d78330fed5e1f6efb2faf815f1b1c3405713a9718059dc9a54e52c  CONFIG.EXE
-          5cf57c284973fce9d14f5677a2e4435fd989c5e938970764d00c8932ed5128ca  ISLE.EXE
-          14645225bbe81212e9bc1919cd8a692b81b8622abb6561280d99b0fc4151ce17  LEGO1.DLL
-          EOF
-
-      - name: Upload authenticated retail references
-        uses: actions/upload-artifact@v7
-        with:
-          name: ISLE-Retail-Win32
-          path: legobin/
-          if-no-files-found: error
-          retention-days: 1
-
   exact:
     name: Reproduce exact Win32 binaries
-    needs: fetch-deps
     runs-on: windows-2022
     timeout-minutes: 90
     env:
@@ -71,7 +38,7 @@ jobs:
           $revision = (Get-Content .github/reprobit-revision -Raw).Trim()
           "revision=$revision" >> $env:GITHUB_OUTPUT
 
-      - name: Check out ReproBit once for provisioning and verification
+      - name: Check out ReproBit at that revision
         uses: actions/checkout@v7
         with:
           repository: isledecomp/reprobit
@@ -84,11 +51,8 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      - name: Restore original binaries
-        uses: actions/download-artifact@v8
-        with:
-          name: ISLE-Retail-Win32
-          path: legobin
+      - name: Download the retail binaries
+        uses: ./.github/actions/retail-binaries
 
       - name: Verify SmartHeap and Smacker generators
         shell: pwsh
@@ -98,18 +62,15 @@ jobs:
           python tools/patch_smartheap_331.py --check
           python tools/gen_smacker_lib.py --check
 
-      - name: Install the checked-out ReproBit CLI
+      - name: Install ReproBit
         shell: pwsh
         run: |
           python -m pip install --upgrade pip
           python -m pip install "$env:GITHUB_WORKSPACE\.reprobit-action"
 
-      - name: Provision and authenticate MSVC 4.2
+      - name: Provision MSVC 4.2
         shell: pwsh
-        run: >-
-          rbit toolchain provision
-          --destination "$env:RUNNER_TEMP\msvc42"
-          --no-save
+        run: rbit toolchain provision --destination "$env:RUNNER_TEMP\msvc42" --no-save
 
       - name: Build cold and verify exact bytes
         id: reprobit
@@ -120,7 +81,7 @@ jobs:
           jobs: "8"
           report-directory: build/reprobit-report
 
-      - name: Check exact and comparison publications
+      - name: Check the exact and comparison publications
         shell: pwsh
         env:
           ACCEPTED: ${{ steps.reprobit.outputs.accepted }}
@@ -134,8 +95,7 @@ jobs:
           QUARANTINE_BYTES: ${{ steps.reprobit.outputs.quarantine-bytes }}
           QUARANTINE_RANGES: ${{ steps.reprobit.outputs.quarantine-ranges }}
           QUARANTINE_DIGEST: ${{ steps.reprobit.outputs.quarantine-digest }}
-          # The reviewed quarantine boundary this repository accepts: none.
-          # Every byte is compiler output; the digest is that of the empty boundary.
+          # Every byte is compiler output: the empty exception boundary.
           EXPECTED_QUARANTINE_COUNT: "0"
           EXPECTED_QUARANTINE_BYTES: "0"
           EXPECTED_QUARANTINE_RANGES: "0"
@@ -187,17 +147,11 @@ jobs:
 
   compare:
     name: Compare the ReproBit build
-    needs: [fetch-deps, exact]
+    needs: exact
     runs-on: windows-2022
     timeout-minutes: 30
 
     steps:
-      - name: Configure a byte-stable checkout
-        shell: pwsh
-        run: |
-          git config --global core.autocrlf false
-          git config --global core.eol lf
-
       - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v7
@@ -205,176 +159,60 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      - name: Download matched ReproBit comparison files
+      - name: Download matched comparison files
         uses: actions/download-artifact@v8
         with:
           name: ReproBit-Win32-Comparison
           path: build/reprobit-debug
 
-      - name: Restore original binaries
-        uses: actions/download-artifact@v8
-        with:
-          name: ISLE-Retail-Win32
-          path: legobin
-
-      - name: Download ReproBit verification report
+      - name: Download the verification report
         uses: actions/download-artifact@v8
         with:
           name: ReproBit-Verification-Report
           path: build/reprobit-report
 
-      # Stock reccmp. The summary step below names the cases that still
-      # cannot be compared exactly without failing the job; the published
-      # reccmp reports are the result. Two remain, each tracked upstream:
-      # https://github.com/isledecomp/reccmp/issues/533 (array end bound)
-      # https://github.com/isledecomp/reccmp/issues/534 (one-sided naming)
-      # The struct with a pointer member from issue 535 is annotated and
-      # skipped by datacmp through report/ignore-variables in
-      # reccmp-project.yml until the comparison can follow the pointer.
-      - name: Install comparison tools
-        run: >-
-          python -m pip install
-          "reccmp @ git+https://github.com/isledecomp/reccmp"
-          "clang==16.0.6"
-          "pyyaml==6.0.3"
-          "colorama==0.4.6"
+      - name: Download the retail binaries
+        uses: ./.github/actions/retail-binaries
 
-      - name: Detect original and recompiled binaries
-        shell: pwsh
-        run: |
-          $sourceRoot = (Resolve-Path "build/reprobit-debug/source").Path
-          $originalRoot = (Resolve-Path "legobin").Path
-          $recompiledRoot = (Resolve-Path "build/reprobit-debug").Path
-          Push-Location $sourceRoot
-          try {
-            reccmp-project detect --what original --search-path $originalRoot
-            reccmp-project detect --what recompiled --search-path $recompiledRoot
-          }
-          finally {
-            Pop-Location
-          }
+      - name: Score the matched build with reccmp
+        uses: ./.github/actions/reccmp
+        with:
+          source-root: build/reprobit-debug/source
+          recompiled: build/reprobit-debug
 
-      - name: Generate accuracy reports and SVGs
-        shell: bash
-        run: |
-          source_root="$GITHUB_WORKSPACE/build/reprobit-debug/source"
-          cd "$source_root"
-          reccmp-reccmp --silent -S "$GITHUB_WORKSPACE/CONFIGPROGRESS.SVG" --svg-icon assets/config.png --target CONFIG --json "$GITHUB_WORKSPACE/CONFIGPROGRESS.json" --html "$GITHUB_WORKSPACE/CONFIGPROGRESS.HTML"
-          reccmp-reccmp --silent -S "$GITHUB_WORKSPACE/ISLEPROGRESS.SVG" --svg-icon assets/isle.png --target ISLE --json "$GITHUB_WORKSPACE/ISLEPROGRESS.json" --html "$GITHUB_WORKSPACE/ISLEPROGRESS.HTML"
-          reccmp-reccmp --silent -S "$GITHUB_WORKSPACE/LEGO1PROGRESS.SVG" --svg-icon assets/lego1.png --target LEGO1 --json "$GITHUB_WORKSPACE/LEGO1PROGRESS.json" --html "$GITHUB_WORKSPACE/LEGO1PROGRESS.HTML"
-
-      - name: Summarize the reccmp match on the ReproBit outcome
+      - name: Summarize the reccmp match
         shell: bash
         run: python .github/scripts/summarize-match.py CONFIG ISLE LEGO1
 
-      - name: Download current continuous reports
+      - name: Compare the ReproBit cost with master
         shell: bash
         env:
-          RELEASE_URL: https://github.com/isledecomp/isle/releases/download/continuous
+          BASELINE_URL: https://github.com/isledecomp/isle/releases/download/continuous/report.json
         run: |
           set -euo pipefail
-          curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 -fLSs -o "$GITHUB_WORKSPACE/CONFIGPROGRESS-old.json" "$RELEASE_URL/CONFIGPROGRESS.json"
-          curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 -fLSs -o "$GITHUB_WORKSPACE/ISLEPROGRESS-old.json" "$RELEASE_URL/ISLEPROGRESS.json"
-          curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 -fLSs -o "$GITHUB_WORKSPACE/LEGO1PROGRESS-old.json" "$RELEASE_URL/LEGO1PROGRESS.json"
-          # The ReproBit baseline exists once master has published a
-          # verified release; until then the cost comparison says so.
-          if ! curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 -fLSs -o "$GITHUB_WORKSPACE/report-old.json" "$RELEASE_URL/report.json"; then
-            rm -f "$GITHUB_WORKSPACE/report-old.json"
-            echo "::notice::The continuous release has no ReproBit report.json to compare against"
-          fi
-
-      - name: Compare the ReproBit cost with the continuous release
-        shell: bash
-        run: >-
-          python .github/scripts/compare-reprobit-cost.py
-          build/reprobit-report/report.json
-          report-old.json
-
-      - name: Show comparison with the continuous release
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd "$GITHUB_WORKSPACE/build/reprobit-debug/source"
-          reccmp-reccmp --target CONFIG --diff "$GITHUB_WORKSPACE/CONFIGPROGRESS-old.json"
-          reccmp-reccmp --target ISLE --diff "$GITHUB_WORKSPACE/ISLEPROGRESS-old.json"
-          reccmp-reccmp --target LEGO1 --diff "$GITHUB_WORKSPACE/LEGO1PROGRESS-old.json"
-
-      - name: Check exports, vtables, and variables
-        shell: bash
-        run: |
-          cd "$GITHUB_WORKSPACE/build/reprobit-debug/source"
-          reccmp-verexp --target LEGO1
-          reccmp-vtable --target CONFIG
-          reccmp-vtable --target ISLE
-          reccmp-vtable --target LEGO1
-          reccmp-datacmp --target CONFIG
-          reccmp-datacmp --target ISLE
-          reccmp-datacmp --target LEGO1
-
-      - name: Check accuracy report files
-        shell: bash
-        run: |
-          set -euo pipefail
-          missing=false
-          for path in \
-            CONFIGPROGRESS.json CONFIGPROGRESS.SVG CONFIGPROGRESS.HTML \
-            ISLEPROGRESS.json ISLEPROGRESS.SVG ISLEPROGRESS.HTML \
-            LEGO1PROGRESS.json LEGO1PROGRESS.SVG LEGO1PROGRESS.HTML
-          do
-            if ! test -s "$path"; then
-              echo "::error file=$path::Missing or empty accuracy report"
-              missing=true
-            fi
-          done
-          test "$missing" = false
+          curl --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 20 \
+            -fLSs -o report-old.json "$BASELINE_URL" || rm -f report-old.json
+          python .github/scripts/compare-reprobit-cost.py build/reprobit-report/report.json report-old.json
 
       - name: Upload accuracy reports
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: ReproBit-Accuracy-Report
           path: |
-            CONFIGPROGRESS.json
-            CONFIGPROGRESS.SVG
-            CONFIGPROGRESS.HTML
-            ISLEPROGRESS.json
-            ISLEPROGRESS.SVG
-            ISLEPROGRESS.HTML
-            LEGO1PROGRESS.json
-            LEGO1PROGRESS.SVG
-            LEGO1PROGRESS.HTML
+            *PROGRESS.json
+            *PROGRESS.SVG
+            *PROGRESS.HTML
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload failed comparison diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: ReproBit-Accuracy-Failure-Diagnostics
-          path: |
-            CONFIGPROGRESS.json
-            CONFIGPROGRESS.SVG
-            CONFIGPROGRESS.HTML
-            ISLEPROGRESS.json
-            ISLEPROGRESS.SVG
-            ISLEPROGRESS.HTML
-            LEGO1PROGRESS.json
-            LEGO1PROGRESS.SVG
-            LEGO1PROGRESS.HTML
-          if-no-files-found: warn
-          retention-days: 7
-
   publish:
     name: Publish continuous release
-    needs: [exact, compare]
-    if: >-
-      ${{ github.event_name == 'push' &&
-          github.ref == 'refs/heads/master' &&
-          github.repository == 'isledecomp/isle' }}
+    needs: compare
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'isledecomp/isle'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      # Reading the Build workflow run of this commit for its developer-build
-      # accuracy reports.
       actions: read
 
     steps:
@@ -394,7 +232,7 @@ jobs:
         with:
           name: ReproBit-Accuracy-Report
 
-      - name: Download ReproBit verification report
+      - name: Download the verification report
         uses: actions/download-artifact@v8
         with:
           name: ReproBit-Verification-Report
@@ -406,41 +244,25 @@ jobs:
           name: ReproBit-Win32-Comparison
           path: reprobit-debug
 
-      # The PDBs only pair with the matched debug binaries and their exported
-      # source view, never with the byte-exact release binaries (which carry
-      # no debug directory), so they ship together as one bundle.
       - name: Bundle the debug companion
-        run: |
-          set -euo pipefail
-          (cd reprobit-debug && zip -rq ../ReproBit-Debug-Companion.zip .)
+        run: (cd reprobit-debug && zip -rq ../ReproBit-Debug-Companion.zip .)
 
-      # The Build workflow scores the plain developer build with reccmp in
-      # parallel; its -dev reports join the release when that run finishes in
-      # time. They are informative only and never hold up the release.
       - name: Fetch the developer-build accuracy reports
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: .github/scripts/fetch-developer-accuracy.sh developer-accuracy
 
-      - name: Publish complete continuous release
+      - name: Publish the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           files=(
-            build/CONFIG.EXE
-            build/ISLE.EXE
-            build/LEGO1.DLL
-            CONFIGPROGRESS.json
-            CONFIGPROGRESS.SVG
-            ISLEPROGRESS.json
-            ISLEPROGRESS.SVG
-            LEGO1PROGRESS.json
-            LEGO1PROGRESS.SVG
-            reprobit-report/report.html
-            reprobit-report/report.json
+            build/CONFIG.EXE build/ISLE.EXE build/LEGO1.DLL
+            ./*PROGRESS.json ./*PROGRESS.SVG
+            reprobit-report/report.html reprobit-report/report.json
             ReproBit-Debug-Companion.zip
           )
           if compgen -G "developer-accuracy/*" > /dev/null; then
@@ -450,11 +272,8 @@ jobs:
 
   pages:
     name: Publish progress pages
-    needs: [exact, compare]
-    if: >-
-      ${{ github.event_name == 'push' &&
-          github.ref == 'refs/heads/master' &&
-          github.repository == 'isledecomp/isle' }}
+    needs: compare
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'isledecomp/isle'
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -466,22 +285,16 @@ jobs:
         with:
           name: ReproBit-Accuracy-Report
 
-      - name: Download ReproBit verification report
+      - name: Download the verification report
         uses: actions/download-artifact@v8
         with:
           name: ReproBit-Verification-Report
           path: reprobit-report
 
-      # The README links every report from here. report.html is
-      # self-contained and links the full report.json record beside it.
       - name: Prepare the progress pages
         run: |
-          set -euo pipefail
-          mkdir -p progress
-          cp CONFIGPROGRESS.SVG CONFIGPROGRESS.HTML progress/
-          cp ISLEPROGRESS.SVG ISLEPROGRESS.HTML progress/
-          cp LEGO1PROGRESS.SVG LEGO1PROGRESS.HTML progress/
-          cp reprobit-report/report.html reprobit-report/report.json progress/
+          mkdir progress
+          cp ./*PROGRESS.SVG ./*PROGRESS.HTML reprobit-report/report.html reprobit-report/report.json progress/
 
       - name: Upload the pages artifact
         uses: actions/upload-pages-artifact@v3
