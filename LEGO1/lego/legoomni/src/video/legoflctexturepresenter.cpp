@@ -1,5 +1,6 @@
 #include "legoflctexturepresenter.h"
 
+#include "legovideomanager.h"
 #include "realtime/matrix4d.inl.h"
 #include "misc.h"
 #include "misc/legocontainer.h"

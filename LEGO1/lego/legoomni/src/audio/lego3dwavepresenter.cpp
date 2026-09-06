@@ -1,5 +1,6 @@
 #include "lego3dwavepresenter.h"
 
+#include "legosoundmanager.h"
 #include "realtime/matrix4d.inl.h"
 #include "mxcompositepresenter.h"
 #include "mxdsaction.h"
