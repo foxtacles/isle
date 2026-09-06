@@ -432,8 +432,7 @@ void Act3::TriggerHitSound(undefined4 p_param1)
 			m_pizzaHitSound = 0;
 		}
 
-		objectId = m_pizzaHitSound++;
-		objectId = g_pizzaHitSounds[objectId];
+		objectId = g_pizzaHitSounds[m_pizzaHitSound++];
 		break;
 	}
 	case 2: {
@@ -441,8 +440,7 @@ void Act3::TriggerHitSound(undefined4 p_param1)
 			m_pizzaMissSound = 0;
 		}
 
-		objectId = m_pizzaMissSound++;
-		objectId = g_pizzaMissSounds[objectId];
+		objectId = g_pizzaMissSounds[m_pizzaMissSound++];
 		break;
 	}
 	case 3: {
@@ -450,8 +448,7 @@ void Act3::TriggerHitSound(undefined4 p_param1)
 			m_copDonutSound = 0;
 		}
 
-		objectId = m_copDonutSound++;
-		objectId = g_copDonutSounds[objectId];
+		objectId = g_copDonutSounds[m_copDonutSound++];
 		break;
 	}
 	case 4: {
@@ -459,8 +456,7 @@ void Act3::TriggerHitSound(undefined4 p_param1)
 			m_donutMissSound = 0;
 		}
 
-		objectId = m_donutMissSound++;
-		objectId = g_donutMissSounds[objectId];
+		objectId = g_donutMissSounds[m_donutMissSound++];
 		break;
 	}
 	case 5: {
@@ -468,8 +464,7 @@ void Act3::TriggerHitSound(undefined4 p_param1)
 			m_islanderSound = 0;
 		}
 
-		objectId = m_islanderSound++;
-		objectId = g_islanderSounds[objectId];
+		objectId = g_islanderSounds[m_islanderSound++];
 		break;
 	}
 	case 6: {
