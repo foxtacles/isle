@@ -623,7 +623,6 @@ LegoResult LegoROI::SetColorByName(const LegoChar* p_name)
 
 // FUNCTION: LEGO1 0x100a9410
 // FUNCTION: BETA10 0x1018b324
-#pragma optimize("y", off)
 LegoU32 LegoROI::Intersect(
 	Vector3& p_rayOrigin,
 	Vector3& p_rayDirection,
@@ -771,8 +770,6 @@ LegoU32 LegoROI::Intersect(
 
 	return 0;
 }
-
-#pragma optimize("", on)
 
 // FUNCTION: LEGO1 0x100a9a50
 // FUNCTION: BETA10 0x1018bb6b
