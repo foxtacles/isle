@@ -257,6 +257,8 @@ void GetDXVersion(LPDWORD pdwDXVersion, LPDWORD pdwDXPlatform)
 	return;
 }
 
+// Reconstruction: not in the CONFIGD beta. Retail CONFIG.EXE keeps an empty DSOUND.dll import
+// descriptor, so a DirectSound reference discarded by /OPT:REF must have been in the link.
 BOOL Detect3DSound()
 {
 	LPDIRECTSOUND lpDirectSound;

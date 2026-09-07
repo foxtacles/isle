@@ -158,6 +158,8 @@ MxLong LegoTestTimer::Notify(MxParam& p_param)
 	return 0;
 }
 
+// Reconstruction: not in BETA10 or the 1996 source. Retail's .reloc reservation (sized before
+// /OPT:REF) accounts for a discarded function with this switch table. Keys mirror Notify.
 void LegoTestTimerConsoleControl(LegoTestTimer* p_timer)
 {
 	while (!_kbhit()) {
